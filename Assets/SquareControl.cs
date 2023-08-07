@@ -26,6 +26,10 @@ public class SquareControl : MonoBehaviour
             {
             otherScript.Ispass = true;
             }
+            else
+            {
+             otherScript.NotPass = true;
+            }
         }
         var speed = lastVelocity.magnitude;
         var direction = Vector3.Reflect(lastVelocity.normalized, other.contacts[0].normal);

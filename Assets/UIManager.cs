@@ -8,7 +8,9 @@ public class UIManager : MonoBehaviour
 {
     [SerializeField] private MenuManager _menuManager;
     [SerializeField] private LevelManager _levelManager;
-    [SerializeField] private NextLevelManager _nextLevelManager;
+    [SerializeField] public NextLevelManager _nextLevelManager;
+    [SerializeField] public NextLevelManager _loseLevelManager;
+    [SerializeField] public OptionManager _optionManager;
 
 
     void Awake()
@@ -23,54 +25,86 @@ public class UIManager : MonoBehaviour
                 case "Level Select":
                     _button.onClick.AddListener(() => StartCoroutine(LevelSelectPopUP()));
                     break;
+                case "Option":
+                    _button.onClick.AddListener(() => StartCoroutine(OptionPopUp()));
+                    break;
             }
         }
     }
       private void OnEnable()
     {
         EventManager.Instance.OnMapIndexChange += (mapIndex) => nextLevel(mapIndex);
+        EventManager.Instance.OnLoseMapIndexChange += (mapIndex) => loseLevel(mapIndex);
     }
 
     private void OnDisable()
     {
         EventManager.Instance.OnMapIndexChange -= (mapIndex) => nextLevel(mapIndex);
-
+         EventManager.Instance.OnLoseMapIndexChange -= (mapIndex) => loseLevel(mapIndex);
+    }
+    public void loseLevel(int mapIndex)
+    {
+      _loseLevelManager.gameObject.SetActive(true);
+        StartCoroutine(buttonPopUp(_loseLevelManager.nextLevelsLists));
+        _levelManager.levels[mapIndex-1].SetActive(false);
+        _levelManager.levels[mapIndex-1].SetActive(true);
+        _levelManager.levels[mapIndex-1].SetActive(false);
+        RemoveButtonListeners(_loseLevelManager);
+         foreach (var button in _loseLevelManager.nextLevelsLists)
+        {
+            Button _button = button.GetComponent<Button>();
+            switch (button.name)
+            {
+                case "Menu":
+                    _button.onClick.AddListener(() => StartCoroutine(LevelSelectPopUP2(_loseLevelManager)));
+                    break;
+                case "PlayAgain":
+                    _button.onClick.AddListener(() => NextLevel(mapIndex - 1,_loseLevelManager));
+                    break;
+            }
+        }
     }
     public void nextLevel(int mapIndex)
     {
-        Debug.Log(mapIndex);
         _nextLevelManager.gameObject.SetActive(true);
         StartCoroutine(buttonPopUp(_nextLevelManager.nextLevelsLists));
         _levelManager.levels[mapIndex-1].SetActive(false);
         _levelManager.levels[mapIndex-1].SetActive(true);
         _levelManager.levels[mapIndex-1].SetActive(false);
+        RemoveButtonListeners(_nextLevelManager);
         foreach (var button in _nextLevelManager.nextLevelsLists)
         {
             Button _button = button.GetComponent<Button>();
             switch (button.name)
             {
                 case "Menu":
-                    _button.onClick.AddListener(() => StartCoroutine(LevelSelectPopUP2()));
-                    Debug.Log("Menu");
+                    _button.onClick.AddListener(() => StartCoroutine(LevelSelectPopUP2(_nextLevelManager)));
                     break;
                 case "PlayAgain":
-                    _button.onClick.AddListener(() => NextLevel(mapIndex - 1));
-                    Debug.Log("PlayAgain");
+                    _button.onClick.AddListener(() => NextLevel(mapIndex - 1,_nextLevelManager));
                     break;
                 case "NextLevel":
-                    _button.onClick.AddListener(() => NextLevel(mapIndex));
-                    Debug.Log("NextLevel");
+                    _button.onClick.AddListener(() => NextLevel(mapIndex,_nextLevelManager));
                     break;
             }
         }
         
     }
+    private void RemoveButtonListeners( NextLevelManager _nextLevelManager)
+{
+    foreach (var button in _nextLevelManager.nextLevelsLists)
+    {
+        Button _button = button.GetComponent<Button>();
+        _button.onClick.RemoveAllListeners();
+    }
+}
+
     
-    void NextLevel(int mapIndex)
+    void NextLevel(int mapIndex, NextLevelManager _nextLevelManager )
     {
         if (mapIndex == _levelManager.levels.Count)
         {
-            StartCoroutine(LevelSelectPopUP2());
+            StartCoroutine(LevelSelectPopUP2( _nextLevelManager));
         }
         else
         {
@@ -78,14 +112,29 @@ public class UIManager : MonoBehaviour
             _levelManager.levels[mapIndex].SetActive(true);
         }
     }
-    IEnumerator LevelSelectPopUP2()
-    {    Debug.Log("Start buttonPopUp");
+    IEnumerator OptionPopUp()
+    {
+          StartCoroutine(buttonPopOut(_menuManager.buttons));
+        yield return new WaitForSeconds(1f);
+        _menuManager.gameObject.SetActive(false);
+        _optionManager.gameObject.SetActive(true);
+        StartCoroutine(buttonPopUp(_optionManager.buttons));
+    }
+    public  IEnumerator OptionPopOut()
+    {
+          StartCoroutine(buttonPopOut(_optionManager.buttons));
+        yield return new WaitForSeconds(1f);
+        _optionManager.gameObject.SetActive(false);
+        _menuManager.gameObject.SetActive(true);
+        StartCoroutine(buttonPopUp(_menuManager.buttons));
+    }
+    IEnumerator LevelSelectPopUP2(NextLevelManager _nextLevelManager)
+    {   
         StartCoroutine(buttonPopOut(_nextLevelManager.nextLevelsLists));
         yield return new WaitForSeconds(1f);
         _menuManager.gameObject.SetActive(false);
         _levelManager.gameObject.SetActive(true);
         StartCoroutine(buttonPopUp(_levelManager.canvasAllButtons));
-         Debug.Log("End buttonPopUp");
     }
     IEnumerator LevelSelectPopUP()
     {

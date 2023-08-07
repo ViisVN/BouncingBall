@@ -20,7 +20,10 @@ public class LevelManager : MonoBehaviour
             Button thisButton = button.GetComponent<Button>();
             index +=1;
             buttonText.text = index.ToString();
+            if(buttonText!=null)
+            {
             thisButton.onClick.AddListener(() => AddLevel(buttonText));
+            }
         }
         Button backButton = GameObject.Find("LevelBack").GetComponent<Button>();
         backButton.onClick.AddListener(()=>StartCoroutine(uiManager.levelSelectBack()));
