@@ -9,7 +9,7 @@ public class SquareControl : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        _rb=GetComponent<Rigidbody2D>();
+        _rb = GetComponent<Rigidbody2D>();
     }
 
     // Update is called once per frame
@@ -17,18 +17,18 @@ public class SquareControl : MonoBehaviour
     {
         lastVelocity = _rb.velocity;
     }
-     private void OnCollisionEnter2D(Collision2D other)
+    private void OnCollisionEnter2D(Collision2D other)
     {
-         MapControl otherScript = other.gameObject.GetComponentInParent<MapControl>();
-        if(other.gameObject.CompareTag("Pass"))
+        MapControl otherScript = other.gameObject.GetComponentInParent<MapControl>();
+        if (other.gameObject.CompareTag("Pass"))
         {
-            if(otherScript.count==0)
+            if (otherScript.count == 0)
             {
-            otherScript.Ispass = true;
+                otherScript.Ispass = true;
             }
             else
             {
-             otherScript.NotPass = true;
+                otherScript.NotPass = true;
             }
         }
         var speed = lastVelocity.magnitude;
